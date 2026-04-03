@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分帳工具 (SPA)</title>
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #000000;
+            --accent-hover: #1f2937;
+            --danger-color: #ef4444;
+            --danger-bg: #fef2f2;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 35px;
+            letter-spacing: -0.025em;
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .section {
+            background: #fff;
+            padding: 0 0 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section:last-of-type {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        /* 輸入框與按鈕極簡化 */
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            outline: none;
+            background-color: #ffffff;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .btn-danger-text {
+            background-color: transparent;
+            color: var(--danger-color);
+            padding: 4px 8px;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger-text:hover {
+            background-color: var(--danger-bg);
+            border-radius: 4px;
+        }
+
+        .btn-clear {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .btn-clear:hover {
+            color: var(--danger-color);
+            background-color: var(--danger-bg);
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        /* 支出紀錄 UI */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* 列表與排序 UI */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        th:hover {
+            color: var(--accent-color);
+        }
+
+        th span.sort-icon {
+            font-size: 0.75rem;
+            margin-left: 2px;
+            color: #d1d5db;
+        }
+
+        th.active-sort span.sort-icon {
+            color: var(--accent-color);
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        /* 結算 UI */
+        .settlement-list {
+            list-style: none;
+        }
+
+        .settlement-list li {
+            padding: 10px 12px;
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .settlement-list li strong {
+            font-weight: 600;
+        }
+
+        /* 頂部區域按鈕排版 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>極簡分帳工具</h1>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>👥 成員管理</h2>
+        </div>
+        <div class="input-group">
+            <input type="text" id="memberName" placeholder="輸入成員姓名..." aria-label="成員姓名">
+            <button class="btn-primary" onclick="addMember()">新增成員</button>
+        </div>
+        <div class="tag-container" id="memberTags"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>✍️ 新增支出</h2>
+        </div>
+        <div class="form-grid">
+            <input type="text" id="expName" placeholder="支出名稱（如：晚餐）">
+            <input type="number" id="expAmount" placeholder="金額" min="0">
+            <select id="expPayer">
+                <option value="">選擇付款人...</option>
+            </select>
+        </div>
+        
+        <label style="display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">分攤成員：</label>
+        <div class="checkbox-group" id="sharersGroup"></div>
+
+        <button class="btn-outline" style="width: 100%;" onclick="addExpense()">新增這筆支出</button>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>📜 支出明細</h2>
+            <button class="btn-clear" onclick="clearAllData()">⚠️ 清除所有資料</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th id="th-idx" onclick="sortTable('idx')">序號 <span class="sort-icon">↕</span></th>
+                        <th id="th-name" onclick="sortTable('name')">名稱 <span class="sort-icon">↕</span></th>
+                        <th id="th-amount" onclick="sortTable('amount')">金額 <span class="sort-icon">↕</span></th>
+                        <th id="th-payer" onclick="sortTable('payer')">付款人 <span class="sort-icon">↕</span></th>
+                        <th>分攤人</th>
+                        <th style="text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>🏁 結算結果</h2>
+        </div>
+        <ul class="settlement-list" id="settlementResult"></ul>
+    </div>
+</div>
+
+<script>
+    let state = JSON.parse(localStorage.getItem('split_bill_data')) || {
+        members: [],
+        expenses: []
+    };
+
+    // 排序狀態
+    let currentSort = {
+        field: 'idx', // 預設依序號排序
+        asc: true
+    };
+
+    function init() {
+        renderAll();
+    }
+
+    function saveData() {
+        localStorage.setItem('split_bill_data', JSON.stringify(state));
+    }
+
+    // 清除所有資料功能
+    function clearAllData() {
+        if (confirm('確定要清除所有的成員以及支出明細嗎？此操作將無法還原！')) {
+            state = {
+                members: [],
+                expenses: []
+            };
+            saveData();
+            renderAll();
+        }
+    }
+
+    // 成員管理
+    function addMember() {
+        const input = document.getElementById('memberName');
+        const name = input.value.trim();
+        
+        if (!name) return alert('請輸入成員姓名！');
+        if (state.members.includes(name)) return alert('成員名稱不能重複！');
+        
+        state.members.push(name);
+        input.value = '';
+        
+        saveData();
+        renderAll();
+    }
+
+    function deleteMember(name) {
+        const isUsed = state.expenses.some(exp => exp.payer === name || exp.sharers.includes(name));
+        if (isUsed) {
+            if (!confirm(`「${name}」已有相關支出紀錄，刪除將會移除該成員相關的所有支出。確定要刪除嗎？`)) {
+                return;
+            }
+            state.expenses = state.expenses.filter(exp => exp.payer !== name && !exp.sharers.includes(name));
+        }
+
+        state.members = state.members.filter(m => m !== name);
+        saveData();
+        renderAll();
+    }
+
+    // 支出紀錄
+    function addExpense() {
+        const nameEl = document.getElementById('expName');
+        const amountEl = document.getElementById('expAmount');
+        const payerEl = document.getElementById('expPayer');
+        
+        const name = nameEl.value.trim();
+        const amount = parseFloat(amountEl.value);
+        const payer = payerEl.value;
+        
+        const sharers = [];
+        const checkboxes = document.querySelectorAll('#sharersGroup input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.checked) sharers.push(cb.value);
+        });
+
+        if (!name || isNaN(amount) || amount <= 0 || !payer || sharers.length === 0) {
+            return alert('請完整填寫支出名稱、正確金額、付款人，且至少勾選一位分攤人！');
+        }
+
+        const newExpense = {
+            id: Date.now(),
+            name,
+            amount,
+            payer,
+            sharers
+        };
+
+        state.expenses.push(newExpense);
+        
+        nameEl.value = '';
+        amountEl.value = '';
+        payerEl.value = '';
+        
+        saveData();
+        renderAll();
+    }
+
+    function deleteExpense(id) {
+        state.expenses = state.expenses.filter(exp => exp.id !== id);
+        saveData();
+        renderAll();
+    }
+
+    // 排序邏輯
+    function sortTable(field) {
+        if (currentSort.field === field) {
+            currentSort.asc = !currentSort.asc;
+        } else {
+            currentSort.field = field;
+            currentSort.asc = true;
+        }
+        renderExpenses();
+    }
+
+    // 核心算法：結算功能
+    function calculateSettlement() {
+        const balances = {};
+        state.members.forEach(member => balances[member] = 0);
+
+        state.expenses.forEach(exp => {
+            const payer = exp.payer;
+            const amount = exp.amount;
+            const sharers = exp.sharers;
+            
+            balances[payer] += amount;
+            
+            const share = amount / sharers.length;
+            sharers.forEach(sharer => {
+                balances[sharer] -= share;
+            });
+        });
+
+        const debtors = [];
+        const creditors = [];
+
+        for (const person in balances) {
+            const bal = balances[person];
+            if (bal < -0.01) {
+                debtors.push({ name: person, amount: Math.abs(bal) });
+            } else if (bal > 0.01) {
+                creditors.push({ name: person, amount: bal });
+            }
+        }
+
+        const results = [];
+        let i = 0, j = 0;
+
+        while (i < debtors.length && j < creditors.length) {
+            const debtor = debtors[i];
+            const creditor = creditors[j];
+            
+            const settledAmount = Math.min(debtor.amount, creditor.amount);
+            const roundedAmount = Math.round(settledAmount);
+            
+            if (roundedAmount > 0) {
+                results.push(`💸 <strong>${debtor.name}</strong> 應給 <strong>${creditor.name}</strong> ➔ <b>${roundedAmount}</b> 元`);
+            }
+            
+            debtor.amount -= settledAmount;
+            creditor.amount -= settledAmount;
+
+            if (debtor.amount < 0.01) i++;
+            if (creditor.amount < 0.01) j++;
+        }
+
+        return results;
+    }
+
+    // 介面渲染
+    function renderAll() {
+        renderMembers();
+        renderPayerDropdown();
+        renderSharersCheckboxes();
+        renderExpenses();
+        renderSettlement();
+    }
+
+    function renderMembers() {
+        const container = document.getElementById('memberTags');
+        container.innerHTML = '';
+        state.members.forEach(name => {
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `
+                ${name}
+                <span class="btn-danger-text" style="cursor:pointer;" onclick="deleteMember('${name}')">✕</span>
+            `;
+            container.appendChild(tag);
+        });
+    }
+
+    function renderPayerDropdown() {
+        const select = document.getElementById('expPayer');
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">選擇付款人...</option>';
+        state.members.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+        select.value = currentValue;
+    }
+
+    function renderSharersCheckboxes() {
+        const container = document.getElementById('sharersGroup');
+        container.innerHTML = '';
+        state.members.forEach(name => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-item';
+            label.innerHTML = `
+                <input type="checkbox" value="${name}" checked>
+                ${name}
+            `;
+            container.appendChild(label);
+        });
+    }
+
+    function renderExpenses() {
+        const tbody = document.getElementById('expenseList');
+        tbody.innerHTML = '';
+
+        // 更新排序標題 UI 狀態
+        const headers = ['idx', 'name', 'amount', 'payer'];
+        headers.forEach(h => {
+            const el = document.getElementById(`th-${h}`);
+            el.className = '';
+            el.querySelector('.sort-icon').textContent = '↕';
+        });
+        const activeHeader = document.getElementById(`th-${currentSort.field}`);
+        activeHeader.className = 'active-sort';
+        activeHeader.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+
+        // 複製一份陣列來做排序與序號附加
+        let displayList = state.expenses.map((item, index) => {
+            return { ...item, idx: index + 1 }; // 序號為原始記錄的第幾筆
+        });
+
+        // 進行排序
+        displayList.sort((a, b) => {
+            let valA = a[currentSort.field];
+            let valB = b[currentSort.field];
+
+            if (typeof valA === 'string') {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA < valB) return currentSort.asc ? -1 : 1;
+            if (valA > valB) return currentSort.asc ? 1 : -1;
+            return 0;
+        });
+
+        displayList.forEach(exp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color: var(--text-muted);">${exp.idx}</td>
+                <td style="font-weight: 500;">${exp.name}</td>
+                <td>$${exp.amount}</td>
+                <td>${exp.payer}</td>
+                <td>${exp.sharers.join(', ')}</td>
+                <td style="text-align: right;">
+                    <button class="btn-danger-text" onclick="deleteExpense(${exp.id})">刪除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderSettlement() {
+        const ul = document.getElementById('settlementResult');
+        ul.innerHTML = '';
+        
+        const results = calculateSettlement();
+        
+        if (results.length === 0) {
+            ul.innerHTML = '<li style="color: var(--text-muted); text-align: center;">🎉 帳目完全平衡，或尚未輸入支出。</li>';
+            return;
+        }
+        
+        results.forEach(text => {
+            const li = document.createElement('li');
+            li.innerHTML = text;
+            ul.appendChild(li);
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>

@@ -275,6 +275,36 @@
   .nav-btn.active::after { left: 0; right: 0; }
   .nav-btn i { font-size: 13px; }
 
+  .nav-divider {
+    width: 1px;
+    height: 22px;
+    background: var(--sky-light);
+    flex-shrink: 0;
+    margin: 0 4px;
+    align-self: center;
+  }
+
+  .nav-btn-external {
+    text-decoration: none;
+    color: var(--accent);
+    font-weight: 500;
+    gap: 6px;
+  }
+
+  .nav-btn-external::after { display: none; }
+
+  .nav-btn-external:hover {
+    color: var(--accent);
+    background: #fff8ee;
+    border-radius: 8px;
+  }
+
+  .nav-ext-icon {
+    font-size: 9px !important;
+    opacity: 0.7;
+    margin-left: 1px;
+  }
+
   /* ── PAGES ── */
   .page { display: none; }
   .page.active { display: block; }
@@ -953,6 +983,11 @@
     <button class="nav-btn" onclick="showPage('memo', this)">
       <i class="fa-solid fa-clipboard-list fa-fw"></i> 備忘
     </button>
+    <div class="nav-divider"></div>
+    <a class="nav-btn nav-btn-external" href="split-bill.html" target="_blank">
+      <i class="fa-solid fa-receipt fa-fw"></i> 分帳工具
+      <i class="fa-solid fa-arrow-up-right-from-square nav-ext-icon"></i>
+    </a>
   </div>
 </nav>
 
